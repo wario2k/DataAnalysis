@@ -69,10 +69,18 @@ cleanData['Maturity_Bins'] = pd.cut(cleanData.maturityDays, dtmBins, labels= bin
 
 #cleanData.to_csv('maturityBins.csv',index = False)
 
+#allocating bins for strike-forward ratios 
+sfrBins = [0, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 5]
+sfrLabels = ['<0.8', '0.8-1.0', '1.0-1.2', '1.2-1.4', '1.4-1.6', '1.6-1.8','>1.8']
+cleanData['sfr_Bins'] = pd.cut(cleanData.sfRatio, sfrBins, labels=sfrLabels, right = False)
 
-#df.groupby(['Animal']).mean()
-dfg = cleanData.groupby('Maturity_Bins').count()
-print(dfg)
+
+#example of group by usage -> df.groupby(['Animal']).mean()
+#dfg = cleanData.groupby('Maturity_Bins').count()
+#print(dfg)
+
+dfr = cleanData.groupby('sfr_Bins').count()
+print(dfr)
 
 #finalDataSet.to_csv('out.csv', index=False)
 
