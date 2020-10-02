@@ -6,7 +6,8 @@ import datetime
 #disabling copy warnings for testing
 pd.set_option('mode.chained_assignment', None)
 #location of our input data
-INPUT_FILE_NAME = 'smallerSubset.csv' 
+INPUT_FILE_NAME_BIG = 'Options5yrs.csv' 
+INPUT_FILE_NAME = 'smallerSubset.csv'
 # Step 1 : reading data from the csv into a pandas dataframe 
 raw_data = pd.read_csv(INPUT_FILE_NAME) 
 #convert date strings to date objects for comparison later
@@ -63,37 +64,59 @@ del cleanData['askBid']
 
 #allocating to DTM bins 
 dtmBins = [0, 30, 60, 90, 120, 365]
-binLabels = ['<30', '30-60', '60-90', '90-120','>120']
-cleanData['Maturity_Bins'] = pd.cut(cleanData.maturityDays, dtmBins, labels= binLabels, right = False)
+binLabels = ['< 30 days', '30 - 60 days', '60 - 90 days', '90 - 120 days','> 120 days']
+cleanData['Days to Maturity'] = pd.cut(cleanData.maturityDays, dtmBins, labels= binLabels, right = False)
 
 #cleanData.to_csv('maturityBins.csv',index = False)
 
 #allocating bins for strike-forward ratios 
+#5 is currently being used as a max to hold the upper range not sure if that needs to be changed 
 sfrBins = [0, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 5]
-sfrLabels = ['<0.8', '0.8-1.0', '1.0-1.2', '1.2-1.4', '1.4-1.6', '1.6-1.8','>1.8']
-cleanData['sfr_Bins'] = pd.cut(cleanData.sfRatio, sfrBins, labels=sfrLabels, right = False)
+sfrLabels = ['< 0.8', '0.8 - 1.0', '1.0 - 1.2', '1.2 - 1.4', '1.4 - 1.6', '1.6 - 1.8','> 1.8']
+cleanData['Strike-Forward Ratio'] = pd.cut(cleanData.sfRatio, sfrBins, labels=sfrLabels, right = False)
 
-#create 2d matrix for maturity date by sf-ratio and :
+''' This block is being used to test number of items in each bin 
+#checking number of items in strike forward ratio bins
+print('##########Number of options for sfr#############')
+print(cleanData.groupby(['Strike-Forward Ratio']).agg({'optionid': ['count']}))
+print('#######################')
+
+#checking number of items on DTM bins 
+print('##########Number of options for Maturity Bins#############')
+print(cleanData.groupby(['Days to Maturity']).agg({'optionid':['count']}))
+print('#######################')
+'''
+
+#group data by maturity date - strike forward-ratio and :
 
 #calculate total number of options per category
-numberOfOptions = cleanData.groupby(['Maturity_Bins', 'sfr_Bins']).agg({'optionid': ['count']})
+numberOfOptions = cleanData.groupby(['Days to Maturity', 'Strike-Forward Ratio']).agg({'optionid': ['count']})
 numberOfOptions.columns = ['Number of Options']
-numberOfOptions = numberOfOptions.reset_index()
-#print(numberOfOptions) 
+#numberOfOptions = numberOfOptions.reset_index()
+print('-------------------------------------------------------------------------')
+print('Number of options grouped by Days to maturity and strike forward ratio:')
+print(numberOfOptions) 
+print('-------------------------------------------------------------------------')
+
 
 #calculate average option prices {option prices = (ask+bid)/2} ->( best_offer + best_bid )/ 2
-averageOptionPrices = cleanData.groupby(['Maturity_Bins', 'sfr_Bins']).agg({'best_offer': ['mean'], 'best_bid' : ['mean']})
+averageOptionPrices = cleanData.groupby(['Days to Maturity', 'Strike-Forward Ratio']).agg({'best_offer': ['mean'], 'best_bid' : ['mean']})
 averageOptionPrices.columns = ['Average Offer', 'Average Bids']
-averageOptionPrices = averageOptionPrices.reset_index()
+#averageOptionPrices = averageOptionPrices.reset_index()
 averageOptionPrices['Average Option Prices'] = (averageOptionPrices['Average Offer'] + averageOptionPrices['Average Bids'])/2
 del averageOptionPrices['Average Bids']
 del averageOptionPrices['Average Offer']
-#print(averageOptionPrices)
+print('Average option prices grouped by Days to maturity and Strike-Forward ratio:')
+print(averageOptionPrices)
+print('-------------------------------------------------------------------------')
+
 
 
 #calculate average implied volatility 
-averageImpliedVolatility = cleanData.groupby(['Maturity_Bins', 'sfr_Bins']).agg({'impl_volatility': ['mean']})
+averageImpliedVolatility = cleanData.groupby(['Days to Maturity', 'Strike-Forward Ratio']).agg({'impl_volatility': ['mean']})
 # rename columns
 averageImpliedVolatility.columns = ['Average Implied Volatility']
-averageImpliedVolatility = averageImpliedVolatility.reset_index()
-#print(averageImpliedVolatility)
+#averageImpliedVolatility = averageImpliedVolatility.reset_index()
+print('Average Implied Volatility for options grouped by Days to maturity and Strike-Forward ratio:')
+print(averageImpliedVolatility)
+print('-------------------------------------------------------------------------')
