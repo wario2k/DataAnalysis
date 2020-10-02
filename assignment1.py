@@ -9,7 +9,7 @@ pd.set_option('mode.chained_assignment', None)
 INPUT_FILE_NAME_BIG = 'Options5yrs.csv' 
 INPUT_FILE_NAME = 'smallerSubset.csv'
 # Step 1 : reading data from the csv into a pandas dataframe 
-raw_data = pd.read_csv(INPUT_FILE_NAME) 
+raw_data = pd.read_csv(INPUT_FILE_NAME_BIG) 
 #convert date strings to date objects for comparison later
 raw_data['date'] = pd.to_datetime(raw_data['date'],infer_datetime_format=True)
 raw_data['exdate'] = pd.to_datetime(raw_data['exdate'],infer_datetime_format=True)
@@ -114,7 +114,6 @@ print('-------------------------------------------------------------------------
 
 #calculate average implied volatility 
 averageImpliedVolatility = cleanData.groupby(['Days to Maturity', 'Strike-Forward Ratio']).agg({'impl_volatility': ['mean']})
-# rename columns
 averageImpliedVolatility.columns = ['Average Implied Volatility']
 #averageImpliedVolatility = averageImpliedVolatility.reset_index()
 print('Average Implied Volatility for options grouped by Days to maturity and Strike-Forward ratio:')
