@@ -43,7 +43,6 @@ posSfRatioCallOptions = mFlt[checkSfRatio & (mFlt['cp_flag'] == 'C')]
 #condition for 1d sfRatio < 1 for put options
 negSfRation = mFlt['sfRatio'] < 1
 negSfRatioPutOptions = mFlt[negSfRation & (mFlt['cp_flag'] == 'P')]
-print(negSfRatioPutOptions.head(3))
 
 #merging the two data sets to get combined list that matches all criterias
 validCallPutOptions = pd.concat([posSfRatioCallOptions,negSfRatioPutOptions])
@@ -74,15 +73,27 @@ sfrBins = [0, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 5]
 sfrLabels = ['<0.8', '0.8-1.0', '1.0-1.2', '1.2-1.4', '1.4-1.6', '1.6-1.8','>1.8']
 cleanData['sfr_Bins'] = pd.cut(cleanData.sfRatio, sfrBins, labels=sfrLabels, right = False)
 
+#create 2d matrix for maturity date by sf-ratio and :
 
-#example of group by usage -> df.groupby(['Animal']).mean()
-#dfg = cleanData.groupby('Maturity_Bins').count()
-#print(dfg)
+#calculate total number of options per category
+numberOfOptions = cleanData.groupby(['Maturity_Bins', 'sfr_Bins']).agg({'optionid': ['count']})
+numberOfOptions.columns = ['Number of Options']
+numberOfOptions = numberOfOptions.reset_index()
+#print(numberOfOptions) 
 
-dfr = cleanData.groupby('sfr_Bins').count()
-print(dfr)
+#calculate average option prices {option prices = (ask+bid)/2} ->( best_offer + best_bid )/ 2
+averageOptionPrices = cleanData.groupby(['Maturity_Bins', 'sfr_Bins']).agg({'best_offer': ['mean'], 'best_bid' : ['mean']})
+averageOptionPrices.columns = ['Average Offer', 'Average Bids']
+averageOptionPrices = averageOptionPrices.reset_index()
+averageOptionPrices['Average Option Prices'] = (averageOptionPrices['Average Offer'] + averageOptionPrices['Average Bids'])/2
+del averageOptionPrices['Average Bids']
+del averageOptionPrices['Average Offer']
+#print(averageOptionPrices)
 
-#finalDataSet.to_csv('out.csv', index=False)
 
-# dfg.columns = dfg.columns.droplevel()
-# dfg.columns = ['Observations', 'mean']
+#calculate average implied volatility 
+averageImpliedVolatility = cleanData.groupby(['Maturity_Bins', 'sfr_Bins']).agg({'impl_volatility': ['mean']})
+# rename columns
+averageImpliedVolatility.columns = ['Average Implied Volatility']
+averageImpliedVolatility = averageImpliedVolatility.reset_index()
+#print(averageImpliedVolatility)
