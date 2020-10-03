@@ -7,7 +7,8 @@ import datetime
 pd.set_option('mode.chained_assignment', None)
 #location of our input data
 INPUT_FILE_NAME_BIG = 'Options5yrs.csv' 
-INPUT_FILE_NAME = 'smallerSubset.csv'
+#small sample set for testing
+INPUT_FILE_NAME = 'smallerSubset.csv' 
 # Step 1 : reading data from the csv into a pandas dataframe 
 raw_data = pd.read_csv(INPUT_FILE_NAME_BIG) 
 #convert date strings to date objects for comparison later
@@ -74,8 +75,8 @@ cleanData['Days to Maturity'] = pd.cut(cleanData.maturityDays, dtmBins, labels= 
 sfrBins = [0, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 5]
 sfrLabels = ['< 0.8', '0.8 - 1.0', '1.0 - 1.2', '1.2 - 1.4', '1.4 - 1.6', '1.6 - 1.8','> 1.8']
 cleanData['Strike-Forward Ratio'] = pd.cut(cleanData.sfRatio, sfrBins, labels=sfrLabels, right = False)
-
-''' This block is being used to test number of items in each bin 
+'''
+#This block is being used to test number of items in each bin 
 #checking number of items in strike forward ratio bins
 print('##########Number of options for sfr#############')
 print(cleanData.groupby(['Strike-Forward Ratio']).agg({'optionid': ['count']}))
@@ -86,7 +87,6 @@ print('##########Number of options for Maturity Bins#############')
 print(cleanData.groupby(['Days to Maturity']).agg({'optionid':['count']}))
 print('#######################')
 '''
-
 #group data by maturity date - strike forward-ratio and :
 
 #calculate total number of options per category
@@ -96,8 +96,8 @@ numberOfOptions.columns = ['Number of Options']
 print('-------------------------------------------------------------------------')
 print('Number of options grouped by Days to maturity and strike forward ratio:')
 print(numberOfOptions) 
+numberOfOptions.to_csv('optionNumbers.csv')
 print('-------------------------------------------------------------------------')
-
 
 #calculate average option prices {option prices = (ask+bid)/2} ->( best_offer + best_bid )/ 2
 averageOptionPrices = cleanData.groupby(['Days to Maturity', 'Strike-Forward Ratio']).agg({'best_offer': ['mean'], 'best_bid' : ['mean']})
@@ -107,15 +107,15 @@ averageOptionPrices['Average Option Prices'] = (averageOptionPrices['Average Off
 del averageOptionPrices['Average Bids']
 del averageOptionPrices['Average Offer']
 print('Average option prices grouped by Days to maturity and Strike-Forward ratio:')
+averageOptionPrices.to_csv('AverageOptionPrices.csv')
 print(averageOptionPrices)
 print('-------------------------------------------------------------------------')
-
-
 
 #calculate average implied volatility 
 averageImpliedVolatility = cleanData.groupby(['Days to Maturity', 'Strike-Forward Ratio']).agg({'impl_volatility': ['mean']})
 averageImpliedVolatility.columns = ['Average Implied Volatility']
 #averageImpliedVolatility = averageImpliedVolatility.reset_index()
 print('Average Implied Volatility for options grouped by Days to maturity and Strike-Forward ratio:')
+averageImpliedVolatility.to_csv('AverageImpliedVolatility.csv')
 print(averageImpliedVolatility)
 print('-------------------------------------------------------------------------')
