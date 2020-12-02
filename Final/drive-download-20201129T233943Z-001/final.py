@@ -38,7 +38,7 @@ umd['medate'] = umd['DATE']+ MonthEnd(0)
 #start date of holding period
 umd['hdate1']=umd['medate']+ MonthBegin(1) 
 #end date of holding period using 6 month range
-umd['hdate2']=umd['medate']+ MonthEnd(6) # holding period length can be 3-12 months 
+umd['hdate2']=umd['medate']+ MonthEnd(1) # holding period length can be 3-12 months 
 umd = umd[['PERMNO', 'form_date','momr','hdate1','hdate2']]
 
 #calculate portfolio returns in the next month.
