@@ -5,7 +5,8 @@ from scipy import stats
 import matplotlib.pyplot as plt
 #this library is called for converting string dates to date time objects for comparison
 import datetime as dt
-import statsmodels.formula.api as smf
+from statsmodels.formula.api import ols
+import statsmodels.api as sm
 #disabling copy warnings for testing
 pd.set_option('mode.chained_assignment', None)
 
@@ -118,7 +119,12 @@ raw_data_research['DATE'] = raw_data_research['DATE'].apply(lambda x: x.strftime
 regression_data = pd.merge(ewret_subset, raw_data_research, on=['DATE'], how='inner')
 regression_data = regression_data.set_index("DATE")
 
-
+mktRFCoeff = -20.0166
+hmlCoeff = -1.3293
+smbCoeff = -6.9579
+formula = 'long_short ~ MktRF + SMB + HML'
+model = ols("long_short ~ MktRF + SMB + HML", regression_data).fit()
+print(model.summary())
 
 ### Graphing ###
 plt.figure(figsize=(12,9))
